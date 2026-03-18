@@ -1,8 +1,20 @@
+> **Research Project:** Robustness Analysis of Prompt-Based Medical Segmentation (MedSAM2)
+
 # MedSAM2 Segmentation Safety Analysis
 
 ![Python](https://img.shields.io/badge/Python-3.10-blue)
 ![PyTorch](https://img.shields.io/badge/PyTorch-DeepLearning-red)
 ![Medical Imaging](https://img.shields.io/badge/Medical-AI-green)
+
+## Abstract
+
+Prompt-based medical segmentation models such as MedSAM2 rely on user-provided inputs (e.g., bounding boxes or points) to guide segmentation. However, the robustness of these models to small variations in prompts remains an important concern for real-world clinical deployment.
+
+In this project, we conduct a systematic robustness analysis of MedSAM2 using the Medical Segmentation Decathlon (MSD) Spleen CT dataset. We introduce prompt jitter experiments where bounding box prompts are randomly perturbed to simulate annotation variability. The impact of prompt perturbations is evaluated using multiple metrics including Dice score, false positive voxels, false negative voxels, Hausdorff distance (HD95), and worst-slice Dice.
+
+In addition to average performance metrics, we analyze tail-risk behavior by identifying worst-performing slices within 3D volumes. We further explore uncertainty estimation through prompt perturbation ensembles to highlight segmentation regions with unstable predictions.
+
+Our experiments show that MedSAM2 remains robust to small prompt perturbations but exhibits significant degradation in segmentation accuracy under larger perturbations, particularly in boundary regions. These findings highlight the importance of robustness evaluation and uncertainty-aware analysis for reliable deployment of prompt-based medical segmentation models.
 
 Robustness and failure analysis of **MedSAM2 medical image segmentation** using **prompt jitter experiments** on the **Medical Segmentation Decathlon (MSD) Spleen CT dataset**.
 
