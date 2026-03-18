@@ -1,6 +1,6 @@
-> **Research Project:** Robustness Analysis of Prompt-Based Medical Segmentation (MedSAM2)
-
 # MedSAM2 Segmentation Safety Analysis
+
+> **Research Project:** Robustness Analysis of Prompt-Based Medical Segmentation (MedSAM2)
 
 ![Python](https://img.shields.io/badge/Python-3.10-blue)
 ![PyTorch](https://img.shields.io/badge/PyTorch-DeepLearning-red)
