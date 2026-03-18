@@ -185,40 +185,22 @@ Uncertainty maps highlight:
 
 ---
 
-# Example Result Plots
-
-*(Add your plots in a folder called `results/`)*
+## Experimental Results
 
 ### Dice vs Prompt Jitter
+![Dice vs Jitter](results/dice_vs_jitter.png)
 
-```
-results/dice_vs_jitter.png
-```
+### False Negative Voxels vs Jitter
+![FN vs Jitter](results/fn_vs_jitter.png)
 
-### False Negatives vs Prompt Jitter
+### False Positive Voxels vs Jitter
+![FP vs Jitter](results/fp_vs_jitter.png)
 
-```
-results/fn_vs_jitter.png
-```
-
-### False Positives vs Prompt Jitter
-
-```
-results/fp_vs_jitter.png
-```
-
-### HD95 vs Prompt Jitter
-
-```
-results/hd95_vs_jitter.png
-```
+### HD95 vs Jitter
+![HD95 vs Jitter](results/hd95_vs_jitter.png)
 
 ### Worst Slice Dice vs Jitter
-
-```
-results/worst_slice_dice_vs_jitter.png
-```
-
+![Worst Slice Dice](results/worst_slice_dice_vs_jitter.png)
 ---
 
 # Visualization Tool
