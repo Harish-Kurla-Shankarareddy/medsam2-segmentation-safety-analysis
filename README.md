@@ -363,9 +363,8 @@ Jun Ma et al.
 
 Harish Kurla Shankarareddy  
 
-Master's Student – Artificial Intelligence  
 
-University of Europe for Applied Sciences
+
 
 GitHub:
 
