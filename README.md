@@ -6,46 +6,51 @@
 ![PyTorch](https://img.shields.io/badge/PyTorch-DeepLearning-red)
 ![Medical Imaging](https://img.shields.io/badge/Medical-AI-green)
 
+---
+
 ## Abstract
 
 Prompt-based medical segmentation models such as MedSAM2 rely on user-provided inputs (e.g., bounding boxes or points) to guide segmentation. However, the robustness of these models to small variations in prompts remains an important concern for real-world clinical deployment.
 
-In this project, we conduct a systematic robustness analysis of MedSAM2 using the Medical Segmentation Decathlon (MSD) Spleen CT dataset. We introduce prompt jitter experiments where bounding box prompts are randomly perturbed to simulate annotation variability. The impact of prompt perturbations is evaluated using multiple metrics including Dice score, false positive voxels, false negative voxels, Hausdorff distance (HD95), and worst-slice Dice.
+In this project, we conduct a systematic robustness analysis of MedSAM2 using the Medical Segmentation Decathlon (MSD) Spleen CT dataset. We introduce **prompt jitter experiments**, where bounding box prompts are randomly perturbed to simulate annotation variability.
 
-In addition to average performance metrics, we analyze tail-risk behavior by identifying worst-performing slices within 3D volumes. We further explore uncertainty estimation through prompt perturbation ensembles to highlight segmentation regions with unstable predictions.
+We evaluate performance using multiple metrics:
 
-Our experiments show that MedSAM2 remains robust to small prompt perturbations but exhibits significant degradation in segmentation accuracy under larger perturbations, particularly in boundary regions. These findings highlight the importance of robustness evaluation and uncertainty-aware analysis for reliable deployment of prompt-based medical segmentation models.
+- Dice score  
+- False Positive voxels  
+- False Negative voxels  
+- Hausdorff Distance (HD95)  
+- Worst-slice Dice (tail-risk metric)  
 
-Robustness and failure analysis of **MedSAM2 medical image segmentation** using **prompt jitter experiments** on the **Medical Segmentation Decathlon (MSD) Spleen CT dataset**.
+Additionally, we analyze **uncertainty estimation** using prompt perturbation ensembles.
 
-This project evaluates how sensitive MedSAM2 is to small variations in bounding box prompts and analyzes segmentation performance using multiple metrics including Dice score, false positives, false negatives, Hausdorff distance, and worst-slice Dice.
+Results show that MedSAM2 is robust to small prompt variations but exhibits significant degradation under large perturbations, especially near object boundaries.
 
 ---
 
-# Project Overview
+## Project Overview
 
-MedSAM2 is a promptable segmentation model for 3D medical images based on the Segment Anything Model (SAM2). It allows segmentation using prompts such as bounding boxes or points.
-
-However, prompt-based segmentation systems can be sensitive to slight changes in prompts.
+MedSAM2 is a prompt-based segmentation model derived from the Segment Anything Model (SAM2), designed for 3D medical imaging.
 
 This project investigates:
 
-- robustness of MedSAM2 segmentation
-- effect of bounding box perturbations
-- segmentation failure modes
-- worst-slice segmentation errors
-- uncertainty estimation from prompt perturbations
+- robustness of segmentation under prompt perturbations  
+- failure modes in 3D medical segmentation  
+- tail-risk behavior using worst-slice Dice  
+- uncertainty estimation from prompt ensembles  
 
-The experiments are conducted using the **MSD Spleen CT dataset**.
+Experiments are conducted on the **MSD Spleen CT dataset**.
 
 ---
 
-# Experiment Pipeline
+## Experiment Pipeline
 
 ```
 CT Volume
    ↓
-Preprocessing (CT windowing)
+CT Windowing
+   ↓
+Key Slice Selection
    ↓
 Bounding Box Prompt
    ↓
@@ -58,53 +63,39 @@ Segmentation Output
 Evaluation Metrics
 ```
 
-Metrics evaluated:
-
-- Dice score
-- False Positive voxels
-- False Negative voxels
-- Hausdorff Distance (HD95)
-- Worst Slice Dice
-
 ---
 
-# Methodology
+## Methodology
 
-## Dataset
+### Dataset
 
-Experiments are performed on the **Medical Segmentation Decathlon (MSD) Spleen CT dataset**.
-
-Dataset link:
+We use the **Medical Segmentation Decathlon (MSD) Spleen dataset**:
 
 https://medicaldecathlon.com/
 
 Each case contains:
 
-- a 3D abdominal CT volume
-- a binary spleen segmentation mask
+- 3D CT volume  
+- binary spleen mask  
 
 ---
 
-## Baseline Segmentation
+### Baseline Segmentation
 
-Baseline MedSAM2 inference is performed on CT volumes using a bounding-box prompt derived from the ground truth mask.
+Steps:
 
-Processing steps:
-
-1. Load CT and ground truth volume
-2. Apply CT windowing to normalize intensities
-3. Identify the **key slice** (slice with maximum spleen area)
-4. Generate bounding box prompt from the ground truth mask
-5. Run MedSAM2 segmentation
-6. Propagate segmentation through the 3D volume
+1. Load CT and GT
+2. Apply CT windowing
+3. Select key slice (max spleen area)
+4. Generate bounding box prompt
+5. Run MedSAM2
+6. Propagate segmentation across volume
 
 ---
 
-## Prompt Jitter Experiment
+### Prompt Jitter Experiment
 
-To evaluate robustness, the bounding box prompt is randomly perturbed.
-
-Jitter levels tested:
+Bounding box is randomly perturbed:
 
 ```
 0 px
@@ -114,258 +105,190 @@ Jitter levels tested:
 20 px
 ```
 
-For each jitter level, multiple trials are performed with different random seeds.
+Each level is tested with multiple trials.
 
-This simulates **annotation variability in real clinical settings**.
+This simulates **real-world annotation variability**.
 
 ---
 
 ## Evaluation Metrics
 
-The following metrics are computed:
-
-### Dice Score
-Measures overlap between prediction and ground truth.
-
-### False Positive Voxels (FP)
-Voxels predicted as spleen but not present in ground truth.
-
-### False Negative Voxels (FN)
-Voxels belonging to spleen but missed by the model.
-
-### Hausdorff Distance (HD95)
-Boundary distance between predicted and ground truth segmentation.
-
-### Worst Slice Dice
-Minimum Dice score across slices of a volume.  
-Used to identify **localized segmentation failures**.
+| Metric | Description |
+|------|------------|
+| Dice | Overlap between prediction and ground truth |
+| FP | False positive voxels (hallucinations) |
+| FN | False negative voxels (missed organ) |
+| HD95 | Boundary error (95th percentile) |
+| Worst Slice Dice | Minimum Dice across slices (tail risk) |
 
 ---
 
-# Uncertainty Estimation
+## Uncertainty Estimation
 
-To analyze model confidence, segmentation is repeated across multiple prompt perturbations.
-
-For each voxel:
+We compute uncertainty from multiple prompt perturbations:
 
 ```
-p(x) = average prediction probability across trials
+p(x) = mean prediction
+U(x) = p(x)(1 - p(x))
 ```
 
-Uncertainty is computed as:
+Interpretation:
 
-```
-U(x) = p(x)(1 − p(x))
-```
+- Low → stable prediction  
+- High → unstable / uncertain region  
 
-Properties:
+This highlights:
 
-- Low uncertainty → predictions agree
-- High uncertainty → predictions vary across trials
-
-Uncertainty maps highlight:
-
-- unstable boundaries
-- ambiguous anatomy
-- failure-prone regions
+- boundary ambiguity  
+- failure-prone regions  
 
 ---
 
-# Results
+## Results
 
-## Multi-Case Prompt Jitter Results
+### Multi-Case Summary
 
-| Jitter (px) | Mean Dice | Mean FN Voxels | Mean FP Voxels | Mean HD95 (mm) | Worst Slice Dice |
-|-------------|-----------|---------------|---------------|---------------|-----------------|
-| 0           | 0.962     | 3470          | 4127          | 2.97          | 0.524           |
-| 2           | 0.963     | 3403          | 4163          | 2.99          | 0.526           |
-| 5           | 0.962     | 3409          | 4231          | 3.08          | 0.529           |
-| 10          | 0.962     | 3603          | 4102          | 3.12          | 0.527           |
-| 20          | 0.897     | 12275         | 3163          | 11.64         | 0.431           |
+| Jitter | Dice | FN | FP | HD95 | Worst Slice |
+|-------|------|----|----|------|------------|
+| 0 px  | 0.962 | 3470 | 4127 | 2.97 | 0.524 |
+| 2 px  | 0.963 | 3403 | 4163 | 2.99 | 0.526 |
+| 5 px  | 0.962 | 3409 | 4231 | 3.08 | 0.529 |
+| 10 px | 0.962 | 3603 | 4102 | 3.12 | 0.527 |
+| 20 px | 0.897 | 12275 | 3163 | 11.64 | 0.431 |
 
 ---
 
-## Experimental Results
+## Experimental Plots
 
-### Dice vs Prompt Jitter
-![Dice vs Jitter](results/dice_vs_jitter.png)
+### Dice vs Jitter
+![Dice](results/dice_vs_jitter.png)
 
-### False Negative Voxels vs Jitter
-![FN vs Jitter](results/fn_vs_jitter.png)
+### False Negatives vs Jitter
+![FN](results/fn_vs_jitter.png)
 
-### False Positive Voxels vs Jitter
-![FP vs Jitter](results/fp_vs_jitter.png)
+### False Positives vs Jitter
+![FP](results/fp_vs_jitter.png)
 
 ### HD95 vs Jitter
-![HD95 vs Jitter](results/hd95_vs_jitter.png)
+![HD95](results/hd95_vs_jitter.png)
 
 ### Worst Slice Dice vs Jitter
-![Worst Slice Dice](results/worst_slice_dice_vs_jitter.png)
+![Worst Slice](results/worst_slice_dice_vs_jitter.png)
+
 ---
 
-# Visualization Tool
+## Visualization Tool
 
-This project includes an interactive viewer for segmentation debugging.
-
-Run:
+Interactive slice viewer:
 
 ```
 python view_case.py \
 --ct path_to_ct.nii.gz \
 --gt path_to_gt.nii.gz \
---pred path_to_prediction.nii.gz
+--pred path_to_pred.nii.gz
 ```
 
-Keyboard controls:
+Controls:
 
 ```
-j / k → scroll slices
-g → toggle ground truth
+j/k → scroll slices
+g → toggle GT
 p → toggle prediction
 ```
 
-The viewer displays:
+Displays:
 
-- CT slice
-- predicted segmentation
-- ground truth
-- false positive regions
-- false negative regions
+- CT slice  
+- segmentation  
+- FP / FN errors  
 
 ---
 
-# Installation
-
-Create environment:
+## Installation
 
 ```
 conda create -n medsam2 python=3.10
 conda activate medsam2
-```
-
-Install dependencies:
-
-```
 pip install torch torchvision
 pip install numpy SimpleITK matplotlib scikit-image
 ```
 
-Clone repository:
-
-```
-git clone https://github.com/Harish-Kurla-Shankarareddy/medsam2-segmentation-safety-analysis.git
-cd medsam2-segmentation-safety-analysis
-```
-
 ---
 
-# Running Experiments
+## Running Experiments
 
-### Baseline inference
+Baseline:
 
 ```
 python msd_spleen_medsam2_infer.py
 ```
 
-### Prompt jitter experiments
+Jitter experiments:
 
 ```
 python msd_prompt_jitter_multicase.py
 ```
 
-### Uncertainty experiments
+Uncertainty:
 
 ```
 python msd_multi_uncertainty_jitter.py
 ```
 
-### Plot metrics
-
-```
-python plot_slice_dice.py
-```
-
 ---
 
-# Project Structure
+## Project Structure
 
 ```
 medsam2-segmentation-safety-analysis
 
-LICENSE
-README.md
-
-debug_msd_spleen.py
-medsam2_infer_3D_CT.py
-
-msd_multi_uncertainty_jitter.py
-msd_prompt_jitter_multicase.py
-msd_prompt_jitter_single_uncertainty.py
-msd_spleen_medsam2_infer.py
-
-plot_prompt_jitter_fp_fn.py
-plot_slice_dice.py
-
-patch_msd.py
-patch_guard_import.py
-
-resample_pred_to_native_and_dice.py
-view_case.py
+├── msd_prompt_jitter_multicase.py
+├── msd_multi_uncertainty_jitter.py
+├── view_case.py
+├── plot_slice_dice.py
+├── results/
+├── README.md
 ```
 
 ---
 
-# Discussion
+## Discussion
 
-The experiments show that MedSAM2 segmentation is stable under small prompt perturbations but degrades significantly under large perturbations.
+Key findings:
 
-Key observations:
-
-- Small prompt noise has minimal effect on Dice score
-- Large perturbations increase **false negatives**
-- Boundary errors increase with jitter
-- Worst-slice Dice reveals local failures hidden by mean Dice
-
-This highlights the importance of **robustness testing and tail-risk metrics** in medical segmentation models.
+- robust under small jitter  
+- performance drops at large perturbations  
+- boundary errors increase significantly  
+- worst-slice Dice reveals hidden failures  
 
 ---
 
-# Future Work
+## Future Work
 
-Possible extensions include:
-
-- uncertainty-aware segmentation
-- model calibration analysis
-- prompt ensemble inference
-- deployment with an interactive UI
-- evaluation on additional MSD organs
+- uncertainty-aware models  
+- calibration analysis  
+- multi-organ evaluation  
+- deployment UI  
 
 ---
 
-# Citation
+## Acknowledgements
 
-If you use MedSAM2, please cite the original work:
+Based on MedSAM2:
 
-```
-MedSAM2: Segment Anything in 3D Medical Images and Videos
-Jun Ma et al.
-```
+https://github.com/bowang-lab/MedSAM2
 
 ---
 
-# Author
+## Author
 
 Harish Kurla Shankarareddy  
 
-
-
-
-GitHub:
-
+GitHub:  
 https://github.com/Harish-Kurla-Shankarareddy
 
 ---
 
-# License
+## License
 
-Apache 2.0 License
+Apache 2.0
